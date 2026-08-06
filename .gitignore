@@ -1,0 +1,14 @@
+target/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+*.log
+.DS_Store
+*.class
+cheltenham*.osm.pbf
+cheltenham*.gpkg
+*.graphml
+__pycache__/
+.venv/
