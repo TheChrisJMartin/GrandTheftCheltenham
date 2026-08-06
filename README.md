@@ -4,83 +4,63 @@ Top-down GTA1/GTA2-style browser driving game set in a **10-mile radius of Chelt
 Delivered as a Tomcat-compatible WAR with real OpenStreetMap-derived roads, physics, missions and admin tooling.
 
 **Current version:** 0.12.1  
-**Epic:** E016
+**Epic:** E016  
+**Live:** https://games.donotpassgo.co.uk/gtc/
 
-## Features implemented in this release
+## Progress (2026-08-06)
 
-| ID        | Title                                      | Status       |
-|-----------|--------------------------------------------|--------------|
-| F16-0001  | Grand Theft Cheltenham (concept)           | Implemented  |
-| F16-0002  | Cheltenham Map Import & Road Graph         | Partial – schema + APIs + docs |
-| F16-0013  | Client Bootstrap & Game Loop               | Implemented (skeleton) |
-| F16-0015  | Vehicle Catalogue & Physics Profiles       | Implemented (data + API) |
+| ID | Title | Status |
+|----|-------|--------|
+| F16-0001 | Concept / scope | Implemented |
+| F16-0002 | Map import & road graph | Implemented (live Overpass + PostGIS cache) |
+| F16-0003 | Map rendering (Canvas layers) | In progress – roads, buildings, parks, water |
+| F16-0013 | Client bootstrap & game loop | Implemented |
+| F16-0015 | Vehicle catalogue (UK 1995–2010) | Implemented |
+| F16-0004+ | Full physics, missions, police, etc. | Still planned / blocked |
 
-Blocked features remain blocked pending the foundation above.
+### Working in the client
+- Fixed-timestep drive loop, WASD / arrows
+- Speed in **mph**, smoothed steering
+- Speed-based camera zoom (thumb-sized car when slow, pulls back at speed)
+- Live OSM fetch → PostGIS (`roads`, `road_segments`, `map_features`)
+- Layered render: terrain → parks/buildings/water → road casing/fill → centre lines → car
+- Road-name toasts
 
 ## Quick start
 
-### 1. Database
-
+### Database
 See [docs/DATABASE_SETUP.md](docs/DATABASE_SETUP.md).
 
 ```bash
-# After PostgreSQL + PostGIS are running:
-psql -U gtc -d grandtheftcheltenham -f src/main/resources/db/migration/V1__schema.sql
-psql -U gtc -d grandtheftcheltenham -f src/main/resources/db/migration/V2__vehicle_catalogue.sql
+psql -d grandtheftcheltenham -f src/main/resources/db/migration/V1__schema.sql
+psql -d grandtheftcheltenham -f src/main/resources/db/migration/V2__vehicle_catalogue.sql
+psql -d grandtheftcheltenham -f src/main/resources/db/migration/V3__map_features.sql
 ```
 
-### 2. Build the WAR
-
+### Build
 ```bash
 mvn clean package -DskipTests
 # → target/grand-theft-cheltenham.war
 ```
 
-### 3. Run (embedded or external Tomcat)
-
-```bash
-# Embedded (dev)
-mvn spring-boot:run
-
-# Or drop the WAR into Tomcat webapps/
-```
-
-Open http://localhost:8080/ and click **Start Driving**.
+Deploy to Tomcat 10+ (context e.g. `/gtc`). Server needs outbound HTTPS to `overpass-api.de` for live map import.
 
 ### Controls
+| Key | Action |
+|-----|--------|
+| ↑ / W | Throttle |
+| ↓ / S | Brake |
+| ← / A | Steer left |
+| → / D | Steer right |
 
-| Key        | Action     |
-|------------|------------|
-| ↑ / W      | Throttle   |
-| ↓ / S      | Brake      |
-| ← / A      | Steer left |
-| → / D      | Steer right|
-
-## API surface (current)
-
+## API surface
 - `GET /api/health`
 - `GET /api/map/status`
-- `GET /api/map/tiles?z=&x=&y=`
+- `GET /api/map/roads/nearby?x=&y=&radius=`
+- `GET /api/map/features/nearby?x=&y=&radius=`
+- `POST /api/map/fetch-around?x=&y=&radius=` — Overpass → DB cache
 - `GET /api/map/road-name?x=&y=`
-- `GET /api/map/graph/nearest?x=&y=&radius=`
-- `GET /api/vehicles`
-- `GET /api/vehicles/{id}`
-- `GET /api/vehicles/catalogue/summary`
+- `GET /api/vehicles`, `/api/vehicles/{id}`, `/api/vehicles/catalogue/summary`
 
-## Project layout
-
-```
-src/main/java/uk/co/cheltenham/gtc/   Spring Boot app + REST controllers
-src/main/resources/static/            Client (HTML + Canvas game loop)
-src/main/resources/db/migration/      SQL schema & vehicle seed
-docs/                                 Database & operational docs
-scripts/                              Map import helpers (expanding)
-```
-
-## Map data
-
-Real Cheltenham roads are **not** bundled. After deployment, run the Geofabrik + osmium pipeline described in `docs/DATABASE_SETUP.md` (or the OSMnx prototype) and load the resulting graph into PostGIS. Until then the client shows a placeholder grid and the map APIs return empty/placeholder payloads.
-
-## Licence / notes
-
+## Licence
 Internal development build for the Garruga / Cheltenham project.
