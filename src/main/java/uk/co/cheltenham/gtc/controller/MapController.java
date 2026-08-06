@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
+import uk.co.cheltenham.gtc.service.MapImportService;
 
 import java.util.*;
 
@@ -13,6 +14,9 @@ public class MapController {
 
     @Autowired
     private JdbcTemplate jdbc;
+
+    @Autowired
+    private MapImportService mapImport;
 
     @GetMapping("/tiles")
     public ResponseEntity<Map<String, Object>> getTile(
@@ -34,7 +38,7 @@ public class MapController {
         Map<String, Object> placeholder = new LinkedHashMap<>();
         placeholder.put("roads", List.of());
         placeholder.put("terrain", "urban");
-        placeholder.put("note", "No real tile data yet – run map import (F16-0002)");
+        placeholder.put("note", "No real tile data yet - use /api/map/fetch-around");
         return ResponseEntity.ok(Map.of(
                 "z", z, "x", x, "y", y,
                 "payload", placeholder
@@ -88,6 +92,46 @@ public class MapController {
             return ResponseEntity.ok(Map.of("found", false));
         }
         return ResponseEntity.ok(Map.of("found", true, "edge", rows.get(0)));
+    }
+
+    @GetMapping("/roads/nearby")
+    public Map<String, Object> nearbyRoads(
+            @RequestParam double x,
+            @RequestParam double y,
+            @RequestParam(defaultValue = "800") double radius,
+            @RequestParam(defaultValue = "400") int limit) {
+        List<Map<String, Object>> roads = mapImport.nearbyRoads(x, y, radius, limit);
+        return Map.of(
+                "count", roads.size(),
+                "roads", roads,
+                "x", x,
+                "y", y,
+                "radius", radius
+        );
+    }
+
+    @GetMapping("/features/nearby")
+    public Map<String, Object> nearbyFeatures(
+            @RequestParam double x,
+            @RequestParam double y,
+            @RequestParam(defaultValue = "800") double radius,
+            @RequestParam(defaultValue = "300") int limit) {
+        List<Map<String, Object>> features = mapImport.nearbyFeatures(x, y, radius, limit);
+        return Map.of(
+                "count", features.size(),
+                "features", features,
+                "x", x,
+                "y", y,
+                "radius", radius
+        );
+    }
+
+    @PostMapping("/fetch-around")
+    public Map<String, Object> fetchAround(
+            @RequestParam double x,
+            @RequestParam double y,
+            @RequestParam(defaultValue = "1200") double radius) {
+        return mapImport.fetchAndCacheAround(x, y, radius);
     }
 
     @GetMapping("/status")
