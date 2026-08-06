@@ -1,66 +1,49 @@
 # Grand Theft Cheltenham
 
-Top-down GTA1/GTA2-style browser driving game set in a **10-mile radius of Cheltenham town centre**.  
-Delivered as a Tomcat-compatible WAR with real OpenStreetMap-derived roads, physics, missions and admin tooling.
+Top-down GTA1/GTA2-style browser driving game set in a **10-mile radius of Cheltenham town centre**.
+Delivered as a Tomcat-compatible WAR with real OpenStreetMap-derived roads.
 
-**Current version:** 0.12.1  
+**Version:** 0.12.1  
 **Epic:** E016  
 **Live:** https://games.donotpassgo.co.uk/gtc/
 
-## Progress (2026-08-06)
+## Progress
 
-| ID | Title | Status |
-|----|-------|--------|
-| F16-0001 | Concept / scope | Implemented |
-| F16-0002 | Map import & road graph | Implemented (live Overpass + PostGIS cache) |
-| F16-0003 | Map rendering (Canvas layers) | In progress – roads, buildings, parks, water |
-| F16-0013 | Client bootstrap & game loop | Implemented |
-| F16-0015 | Vehicle catalogue (UK 1995–2010) | Implemented |
-| F16-0004+ | Full physics, missions, police, etc. | Still planned / blocked |
+| Feature | Status |
+|---------|--------|
+| F16-0002 Map import (Overpass → PostGIS) | Implemented |
+| F16-0003 Canvas map rendering | Implemented (roads, buildings, parks, water) |
+| F16-0013 Client bootstrap & game loop | Implemented (fixed 40 FPS render, 60 Hz physics) |
+| F16-0015 Vehicle catalogue | Implemented |
+| Schema auto-migrate on WAR boot | Implemented (`SchemaBootstrap`) |
+| UK left-lane drive, reverse, multipoint turns | Implemented |
+| Town-centre spawn (Promenade) | Implemented |
 
-### Working in the client
-- Fixed-timestep drive loop, WASD / arrows
-- Speed in **mph**, smoothed steering
-- Speed-based camera zoom (thumb-sized car when slow, pulls back at speed)
-- Live OSM fetch → PostGIS (`roads`, `road_segments`, `map_features`)
-- Layered render: terrain → parks/buildings/water → road casing/fill → centre lines → car
-- Road-name toasts
+## Build
 
-## Quick start
-
-### Database
-See [docs/DATABASE_SETUP.md](docs/DATABASE_SETUP.md).
-
-```bash
-psql -d grandtheftcheltenham -f src/main/resources/db/migration/V1__schema.sql
-psql -d grandtheftcheltenham -f src/main/resources/db/migration/V2__vehicle_catalogue.sql
-psql -d grandtheftcheltenham -f src/main/resources/db/migration/V3__map_features.sql
-```
-
-### Build
 ```bash
 mvn clean package -DskipTests
 # → target/grand-theft-cheltenham.war
 ```
 
-Deploy to Tomcat 10+ (context e.g. `/gtc`). Server needs outbound HTTPS to `overpass-api.de` for live map import.
+Deploy to Tomcat 10+ (context `/gtc`). Needs PostgreSQL/PostGIS and outbound HTTPS to Overpass.
 
-### Controls
+SQL under `src/main/resources/db/migration/` is applied automatically on startup (V1 schema, V2 vehicles, V3 map_features).
+
+## Controls
+
 | Key | Action |
 |-----|--------|
-| ↑ / W | Throttle |
-| ↓ / S | Brake |
-| ← / A | Steer left |
-| → / D | Steer right |
+| W / ↑ | Accelerate |
+| S / ↓ | Brake, then reverse |
+| A / ← | Steer left |
+| D / → | Steer right |
 
-## API surface
+## API
+
 - `GET /api/health`
 - `GET /api/map/status`
-- `GET /api/map/roads/nearby?x=&y=&radius=`
-- `GET /api/map/features/nearby?x=&y=&radius=`
-- `POST /api/map/fetch-around?x=&y=&radius=` — Overpass → DB cache
-- `GET /api/map/road-name?x=&y=`
-- `GET /api/vehicles`, `/api/vehicles/{id}`, `/api/vehicles/catalogue/summary`
-
-## Licence
-Internal development build for the Garruga / Cheltenham project.
+- `GET /api/map/roads/nearby`, `/api/map/features/nearby`
+- `POST /api/map/fetch-around`
+- `GET /api/map/road-name`
+- `GET /api/vehicles`, `/api/vehicles/{id}`
