@@ -11,7 +11,8 @@
     #hud {
       position: absolute; top: 12px; left: 12px; color: #eee;
       background: rgba(0,0,0,0.55); padding: 8px 12px; border-radius: 6px;
-      font-size: 13px; line-height: 1.4; pointer-events: none; min-width: 180px;
+      font-size: 13px; line-height: 1.4; pointer-events: none;
+      min-width: 180px;
     }
     #roadToast {
       position: absolute; top: 18%; left: 50%; transform: translateX(-50%);
@@ -38,18 +39,18 @@
 <body>
   <div id="titleSplash">
     <h1>Grand Theft Cheltenham</h1>
-    <p>Top-down driving · 10-mile radius · v0.12.1</p>
+    <p>Top-down driving - 10-mile radius - v0.12.1</p>
     <button id="startBtn">Start Driving</button>
   </div>
   <canvas id="gameCanvas"></canvas>
   <div id="hud">
-    <div>FPS: <span id="fps">–</span></div>
-    <div>Speed: <span id="speed">0</span> km/h</div>
-    <div>Heading: <span id="heading">0</span>°</div>
-    <div>Pos: <span id="pos">–</span></div>
+    <div>FPS: <span id="fps">-</span></div>
+    <div>Speed: <span id="speed">0</span> mph</div>
+    <div>Heading: <span id="heading">0</span> deg</div>
+    <div>Pos: <span id="pos">-</span></div>
     <div id="debugExtra"></div>
   </div>
   <div id="roadToast"></div>
-  <script type="module" src="/js/game.js"></script>
+  <script src="js/game.js"></script>
 </body>
 </html>
