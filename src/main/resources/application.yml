@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: grand-theft-cheltenham
+  datasource:
+    url: jdbc:postgresql://localhost:5432/grandtheftcheltenham
+    username: gtc
+    password: gtcpass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+  sql:
+    init:
+      mode: never
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+gtc:
+  map:
+    center-lat: 51.900
+    center-lon: -2.080
+    radius-km: 16
+    default-spawn-x: -231500
+    default-spawn-y: 6778000
+  physics:
+    timestep-hz: 60
